@@ -8,11 +8,6 @@
 import scrapy
 
 class MeneameCrawlerItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
-
-class MnmTestItem(scrapy.Item):
 	index = scrapy.Field()
 	noticia = scrapy.Field()
 	link_noticia = scrapy.Field()
