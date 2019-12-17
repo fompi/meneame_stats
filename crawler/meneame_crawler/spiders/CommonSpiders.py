@@ -2,7 +2,7 @@
 from re import findall
 from scrapy.loader import ItemLoader
 import scrapy
-from meneame_crawler.items import MeneameCrawlerItem
+from meneame_crawler.items import NewsLoader
 
 class MeneameBaseSpider(scrapy.Spider):
     allowed_domains = ['meneame.net']
@@ -10,7 +10,7 @@ class MeneameBaseSpider(scrapy.Spider):
     def parse(self, response):
 
         for selector in response.xpath('.//*[@class="news-summary"]'):
-            loader = ItemLoader(item=MeneameCrawlerItem(), selector=selector)
+            loader = NewsLoader(selector=selector)
 
             loader.add_xpath('index', './/h2/a/@class', re='l:(.*)')
             loader.add_xpath('noticia', './/h2/a/text()')

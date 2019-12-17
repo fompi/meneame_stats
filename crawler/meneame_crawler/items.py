@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
-
-# Define here the models for your scraped items
-#
-# See documentation in:
-# http://doc.scrapy.org/en/latest/topics/items.html
-
+from scrapy.loader import ItemLoader
+from scrapy.loader.processors import TakeFirst, MapCompose
 import scrapy
 
-class MeneameCrawlerItem(scrapy.Item):
+class NewsItem(scrapy.Item):
 	index = scrapy.Field()
 	noticia = scrapy.Field()
 	link_noticia = scrapy.Field()
@@ -26,3 +22,8 @@ class MeneameCrawlerItem(scrapy.Item):
 	sub = scrapy.Field()
 	extracto = scrapy.Field()
 
+class NewsLoader(ItemLoader):
+    default_item_class = NewsItem
+    default_output_processor = TakeFirst()
+
+    noticia_in = MapCompose(str.strip)
