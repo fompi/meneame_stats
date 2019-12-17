@@ -2,11 +2,8 @@
 from re import findall
 import scrapy
 
-
-class DescartadasSpider(scrapy.Spider):
-    name = 'descartadas'
+class MeneameBaseSpider(scrapy.Spider):
     allowed_domains = ['meneame.net']
-    start_urls = ['https://www.meneame.net/queue?meta=_discarded']
 
     def parse(self, response):
 
@@ -153,3 +150,10 @@ class DescartadasSpider(scrapy.Spider):
                 'Critical error extracting index from "%s" on %s' % (sig_pag, response.url)
             )
 
+class PortadaSpider(MeneameBaseSpider):
+    name = 'portada'
+    start_urls = ['https://meneame.net/']
+
+class DescartadasSpider(MeneameBaseSpider):
+    name = 'descartadas'
+    start_urls = ['https://www.meneame.net/queue?meta=_discarded']
