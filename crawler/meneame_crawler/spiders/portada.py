@@ -72,8 +72,7 @@ class PortadaSpider(scrapy.Spider):
                 meneos = ''
 
             try:
-                clicks = extraer(new.xpath('.//*[@class="clics"]/text()').extract_first())
-                clicks = extraer(clicks.replace(' ', '').replace('clics', ''))
+                clicks = extraer(new.xpath('.//*[@class="clics"]/span/text()').extract_first())
             except Exception:
                 clicks = ''
 
@@ -85,30 +84,27 @@ class PortadaSpider(scrapy.Spider):
 
             try:
                 v_pos = extraer(
-                    new.xpath('.//*[@class="votes-up"]/span/strong/text()')[1::2][0].extract()
+                    new.xpath('.//*[@class="positive-vote-number"]/text()')[0].extract()
                 )
             except Exception:
                 v_pos = ''
 
             try:
                 v_anom = extraer(
-                    new.xpath(
-                        './/*[@class="wideonly votes-anonymous"]/span/strong/text()'
-                    )[1::2][0].extract()
+                    new.xpath('.//*[@class="anonymous-vote-number"]/text()')[0].extract()
                 )
             except Exception:
                 v_anom = ''
 
             try:
-                v_neg = extraer(new.xpath(
-                    './/*[@class="votes-down"]/span/strong/text()'
-                )[1::2][0].extract())
+                v_neg = extraer(
+                    new.xpath('.//*[@class="negative-vote-number"]/text()')[0].extract()
+                )
             except Exception:
                 v_neg = ''
 
             try:
-                karma = extraer(new.xpath('.//*[@class="karma-value"]/text()')[1::2][0].extract())
-                karma = extraer(karma.replace(' ', ''))
+                karma = extraer(new.xpath('.//*[@class="karma-number"]/text()')[0].extract())
             except Exception:
                 karma = ''
 
