@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from re import findall
 import scrapy
 
 
@@ -16,7 +17,6 @@ class PortadaSpider(scrapy.Spider):
                 field = ''
             return field
 
-
         news = response.xpath('.//*[@class="news-summary"]')
         for new in news:
             try:
@@ -33,7 +33,7 @@ class PortadaSpider(scrapy.Spider):
 
             try:
                 link_n = extraer(new.xpath('.//h2/a/@href').extract_first())
-                link_n = link_n + " "
+                link_n = link_n + ' '
             except Exception:
                 link_n = ''
 
@@ -49,15 +49,17 @@ class PortadaSpider(scrapy.Spider):
                 user = ''
 
             try:
-                id_user = \
-                    extraer(new.xpath('.//*[@class="news-submitted"]/a/@class').extract_first())
+                id_user = extraer(
+                    new.xpath('.//*[@class="news-submitted"]/a/@class').extract_first()
+                )
                 id_user = extraer(id_user.replace('tooltip u:', ''))
             except Exception:
                 id_user = ''
 
             try:
-                f_envio = \
-                    extraer(new.xpath('.//*[@class="ts visible"]/@data-ts').extract()[0::2][0])
+                f_envio = extraer(
+                    new.xpath('.//*[@class="ts visible"]/@data-ts').extract()[0::2][0]
+                )
             except Exception:
                 f_envio = ''
 
@@ -126,23 +128,28 @@ class PortadaSpider(scrapy.Spider):
                 'link_noticia': link_n,
                 'web': web,
                 'usuario': user,
-                'id_usuario' : id_user,
-                'fecha_envio' : f_envio,
-                'fecha_publicacion' : f_pub,
-                'meneos' : meneos,
-                'clicks' : clicks,
+                'id_usuario': id_user,
+                'fecha_envio': f_envio,
+                'fecha_publicacion': f_pub,
+                'meneos': meneos,
+                'clicks': clicks,
                 'comentarios': coment,
-                'votos_positivos' : v_pos,
-                'votos_anonimos' : v_anom,
-                'votos_negativos' : v_neg,
-                'karma' : karma,
-                'sub' : seccion,
-                'extracto' : extracto
+                'votos_positivos': v_pos,
+                'votos_anonimos': v_anom,
+                'votos_negativos': v_neg,
+                'karma': karma,
+                'sub': seccion,
+                'extracto': extracto
             }
 
         sig_pag = response.xpath('.//*[contains(text(), "siguiente »")]/@href').extract_first()
         abs_sig_pag = response.urljoin(sig_pag)
 
-        self.logger.info('Following to pag ' + sig_pag.split('=')[1])
+        if len(findall(r'\d+', sig_pag)) == 1:
+            self.logger.info('Following to pag ' + findall(r'\d+', sig_pag)[0])
+            yield scrapy.Request(abs_sig_pag)
+        else:
+            self.logger.critical(
+                'Critical error extracting index from "%s" on %s' % (sig_pag, response.url)
+            )
 
-        yield scrapy.Request(abs_sig_pag)

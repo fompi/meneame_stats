@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from re import findall
 import scrapy
 
 
@@ -43,6 +44,7 @@ class DescartadasSpider(scrapy.Spider):
 
             try:
                 user = extraer(new.xpath('.//*[@class="news-submitted"]/a/text()').extract_first())
+                user = extraer(user.replace(';', ','))
             except Exception:
                 user = ''
 
@@ -72,11 +74,9 @@ class DescartadasSpider(scrapy.Spider):
                 meneos = ''
 
             try:
-                clicks = extraer(new.xpath('.//*[@class="clics"]/text()').extract_first())
-                clicks = extraer(clicks.replace(' ', '').replace('clics', ''))
+                clicks = extraer(new.xpath('.//*[@class="clics"]/span/text()').extract_first())
             except Exception:
                 clicks = ''
-
 
             try:
                 coment = extraer(new.xpath('.//*[@class="comments"]/text()')[1::2][0].extract())
@@ -84,32 +84,29 @@ class DescartadasSpider(scrapy.Spider):
             except Exception:
                 coment = ''
 
-
             try:
                 v_pos = extraer(
-                    new.xpath('.//*[@class="votes-up"]/span/strong/text()')[1::2][0].extract()
+                    new.xpath('.//*[@class="positive-vote-number"]/text()')[0].extract()
                 )
             except Exception:
                 v_pos = ''
 
-
             try:
-                v_anom = extraer(new.xpath(
-                    './/*[@class="wideonly votes-anonymous"]/span/strong/text()'
-                )[1::2][0].extract())
+                v_anom = extraer(
+                    new.xpath('.//*[@class="anonymous-vote-number"]/text()')[0].extract()
+                )
             except Exception:
                 v_anom = ''
 
             try:
-                v_neg = extraer(new.xpath(
-                    './/*[@class="votes-down"]/span/strong/text()'
-                )[1::2][0].extract())
+                v_neg = extraer(
+                    new.xpath('.//*[@class="negative-vote-number"]/text()')[0].extract()
+                )
             except Exception:
                 v_neg = ''
 
             try:
-                karma = extraer(new.xpath('.//*[@class="karma-value"]/text()')[1::2][0].extract())
-                karma = extraer(karma.replace(' ', ''))
+                karma = extraer(new.xpath('.//*[@class="karma-number"]/text()')[0].extract())
             except Exception:
                 karma = ''
 
@@ -146,8 +143,13 @@ class DescartadasSpider(scrapy.Spider):
             }
 
         sig_pag = response.xpath('.//*[contains(text(), "siguiente »")]/@href').extract_first()
-        abs_sig_pag = response.urljoin('http://meneame.net/queue' + sig_pag)
+        abs_sig_pag = response.urljoin(sig_pag)
 
-        self.logger.info('Following to pag ' + sig_pag.split('&')[0].split('=')[1])
+        if len(findall(r'\d+', sig_pag)) == 1:
+            self.logger.info('Following to pag ' + findall(r'\d+', sig_pag)[0])
+            yield scrapy.Request(abs_sig_pag)
+        else:
+            self.logger.critical(
+                'Critical error extracting index from "%s" on %s' % (sig_pag, response.url)
+            )
 
-        yield scrapy.Request(abs_sig_pag)
