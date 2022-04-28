@@ -42,16 +42,18 @@ sub_set <- function(df, colum, val){
 }
 
 #Directorio
-setwd(file.path("D:", "Programacion", "Python", "Proyecto meneame"))
+#setwd(file.path("D:", "Programacion", "Python", "Proyecto meneame"))
 #setwd(file.path("media","usuario","Mula", "Programacion", "Python", "Proyecto meneame"))
 
 #Leemos los datos
-dt_portada <- fread("portada 04-12-2017.csv", sep=";", header = TRUE, encoding="UTF-8")
+#dt_portada <- fread("portada.csv", sep=";", header = TRUE, encoding="UTF-8")
+dt_portada <- read.csv("portada.csv", sep=";", header = TRUE, encoding="UTF-8")
+
 
 #Cambiamos los espacios en blanco por NAN's
-dt_portada <- dt_portada %>%
-  mutate_if(is.factor, funs(factor(replace(., .=="", NA))))
-dt_portada <- dt_portada[rowSums(is.na(dt_portada)) == 0,]
+#dt_portada <- dt_portada %>%
+#  mutate_if(is.factor, funs(factor(replace(., .=="", NA))))
+#dt_portada <- dt_portada[rowSums(is.na(dt_portada)) == 0,]
 
 #Declaramos series temporales
 dt_portada$fecha_envio <- as.POSIXct(dt_portada$fecha_envio, origin = "1970-01-01") 
@@ -858,24 +860,31 @@ gen_cloud <- function(dataf,x){
 gen_cloud(dt_portada$noticia, "total")
 ```
 
-## Año 2006 (primer año completo de vida de menéame)
-```{r meneame_20, echo=FALSE, warning=F}
-#Por año
-
-df <- dt_portada[(dt_portada$fecha_publicacion > paste(as.character(2006),"-01-01", sep="") & dt_portada$fecha_publicacion < paste(as.character(2006+1),"-01-01", sep="")), 2] 
-gen_cloud(df, as.character(2006))
-
-```
-
-## Año 2017
+### Año 2006 (primer año completo de vida de menéame)
+#```{r meneame_20, echo=FALSE, warning=F}
+##Por año
+#
+#df <- dt_portada[(dt_portada$fecha_publicacion > paste(as.character(2006),"-01-01", sep="") & dt_portada$fecha_publicacion < paste(as.character(2006+1),"-01-01", sep="")), 2] 
+#gen_cloud(df, as.character(2006))
+#
+#```
+#
+### Año 2017
+#```{r meneame_21, echo=FALSE, warning=F}
+##Por año
+#
+#df <- dt_portada[(dt_portada$fecha_publicacion > paste(as.character(2017),"-01-01", sep="") & dt_portada$fecha_publicacion < paste(as.character(2017+1),"-01-01", sep="")), 2] 
+#gen_cloud(df, as.character(2017))
+#
+#```
+## Año 2022
 ```{r meneame_21, echo=FALSE, warning=F}
 #Por año
 
-df <- dt_portada[(dt_portada$fecha_publicacion > paste(as.character(2017),"-01-01", sep="") & dt_portada$fecha_publicacion < paste(as.character(2017+1),"-01-01", sep="")), 2] 
-gen_cloud(df, as.character(2017))
-
-```
-
+df <- dt_portada[(dt_portada$fecha_publicacion > paste(as.character(2022),"-01-01", sep="") & dt_portada$fecha_publicacion < paste(as.character(2022+1),"-01-01", sep="")), 2] 
+gen_cloud(df, as.character(2022))
+#
+#
 ##200 noticias con mas clicks
 ```{r meneame_22, echo=FALSE, warning=F}
 df <- dt_portada[complete.cases(dt_portada[,10]), ]

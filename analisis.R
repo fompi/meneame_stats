@@ -16,7 +16,7 @@ library(tm)
 library(wordcloud)
 
 #Directorio
-setwd(file.path("D:", "Programacion", "Python", "Proyecto meneame"))
+#setwd(file.path("D:", "Programacion", "Python", "Proyecto meneame"))
 
 #Funciones
 ts_mensual <- function(db){
@@ -25,7 +25,6 @@ ts_mensual <- function(db){
     group_by(date) %>% 
     count(fecha_publicacion) %>% summarise(total=sum(n))
 }
-
 ts_anual <- function(db){
   db %>%
     mutate(date = format(fecha_publicacion, "%Y")) %>%
@@ -38,13 +37,13 @@ sub_set <- function(df, colum, val){
 }
 
 #Cargamos DB
-#dt_portada <- read.csv("portada 04-12-2017.csv", sep=";", header = TRUE, encoding="UTF-8")
-dt_portada <- fread("portada 04-12-2017.csv", sep=";", header = TRUE, encoding="UTF-8")
+dt_portada <- read.csv("portada.csv", sep=";", header = TRUE, encoding="UTF-8")
+#dt_portada <- fread("portada.csv", sep=";", header = TRUE, encoding="UTF-8")
 
 #Cambiamos los espacios en blanco por NAN's
-dt_portada <- dt_portada %>%
-  mutate_if(is.factor, funs(factor(replace(., .=="", NA))))
-dt_portada <- dt_portada[rowSums(is.na(dt_portada)) == 0,]
+#dt_portada <- dt_portada %>%
+#  mutate_if(is.factor, funs(factor(replace(., .=="", NA))))
+#dt_portada <- dt_portada[rowSums(is.na(dt_portada)) == 0,]
 
 #Declaramos series temporales
 dt_portada$fecha_envio <- as.POSIXct(dt_portada$fecha_envio, origin = "1970-01-01") 
@@ -452,8 +451,11 @@ dt_portada$web <-recode(dt_portada$web, "c('es.reuters.com', 'reuters.com', 'lta
                         'in.today.reuters.com', 'africa.reuters.com', 'ca.reuters.com', 'fr.reuters.com', 'i.today.reuters.com',
                         'mx.reuters.com', 'newsandinsight.thomsonreuters.com', 'us.mobile.reuters.com')='reuters.com'")
 
+dt_portada$web
+
 #Gráfico de nº de portadas
 webs <- as.data.frame(table(dt_portada$web))
+
 webs <- webs[order(-webs$Freq),] 
 rownames(webs) <- NULL
 table(webs$Freq)
@@ -873,7 +875,8 @@ gen_cloud <- function(dataf,x){
 gen_cloud(dt_portada$noticia, "total")
 
 #Por año
-for(i in (2005:2017)){
+#for(i in (2005:2017)){
+for(i in (2022:2022)){
   cat("Generando nube de palabras del año -> ", i, "\n")
   df <- dt_portada[(dt_portada$fecha_publicacion > paste(as.character(i),"-01-01", sep="") & dt_portada$fecha_publicacion < paste(as.character(i+1),"-01-01", sep="")), 2] 
   gen_cloud(df, as.character(i))
