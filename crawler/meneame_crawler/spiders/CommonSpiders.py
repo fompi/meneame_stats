@@ -42,10 +42,30 @@ class MeneameBaseSpider(scrapy.Spider):
                 'Critical error extracting index from "%s" on %s' % (sig_pag, response.url)
             )
 
-class PortadaSpider(MeneameBaseSpider):
-    name = 'portada'
-    start_urls = ['https://old.meneame.net/']
+class MeneameSpider(MeneameBaseSpider):
+  name = 'meneame'
+  start_urls = []
+  custom_settings = {}
 
-class DescartadasSpider(MeneameBaseSpider):
-    name = 'descartadas'
-    start_urls = ['https://old.meneame.net/queue?meta=_discarded']
+  def __init__(self, status=None, limit=1, *args, **kwargs):
+
+    super(MeneameSpider, self).__init__(*args, **kwargs)
+
+    if status == 'trash':
+      self.start_urls.append('https://old.meneame.net/queue?meta=_discarded')
+    elif status == 'portada':
+      self.start_urls.append('https://old.meneame.net/')
+    elif status == 'pending':
+      self.start_urls.append('https://old.meneame.net/queue')
+        # or .../shakeit.php?meta=_open ?
+
+#    if limit.isnumeric() and int(limit) > 0:
+#      self.limit = int(limit)
+#      self.custom_settings['DEPTH_LIMIT'] = self.limit
+#      self.crawler.settings.overrides.settings.set('DEPTH_LIMIT', 1)
+#      #self.custom_settings.update({'DEPTH_LIMIT': self.limit})
+#    elif limit is False:
+#      self.custom_settings['DEPTH_LIMIT'] = 0
+#    else:
+#      self.custom_settings['DEPTH_LIMIT'] = 1
+#      self.crawler.settings.overrides.settings.set('DEPTH_LIMIT', 1)
