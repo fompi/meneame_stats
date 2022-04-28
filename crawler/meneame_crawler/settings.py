@@ -116,3 +116,15 @@ FIELDS_TO_EXPORT = [
 CSV_DELIMITER = ";"
 
 LOG_LEVEL = 'INFO'
+
+DEPTH_LIMIT = 5
+
+#ITEM_PIPELINES = {
+#    'meneame_crawler.pipelines.MeneameCrawlerPipeline': 300,
+#}
+
+#FEEDS = {
+#  "./%(file_name)s-csv.CSV" : {
+#    "format": "csv"
+#  }
+#}

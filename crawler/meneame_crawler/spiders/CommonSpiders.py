@@ -5,7 +5,7 @@ import scrapy
 from meneame_crawler.items import NewsLoader
 
 class MeneameBaseSpider(scrapy.Spider):
-    allowed_domains = ['meneame.net']
+    allowed_domains = ['old.meneame.net']
 
     def parse(self, response):
 
@@ -44,8 +44,8 @@ class MeneameBaseSpider(scrapy.Spider):
 
 class PortadaSpider(MeneameBaseSpider):
     name = 'portada'
-    start_urls = ['https://meneame.net/']
+    start_urls = ['https://old.meneame.net/']
 
 class DescartadasSpider(MeneameBaseSpider):
     name = 'descartadas'
-    start_urls = ['https://www.meneame.net/queue?meta=_discarded']
+    start_urls = ['https://old.meneame.net/queue?meta=_discarded']
