@@ -8,13 +8,25 @@ https://www.meneame.net/m/Visualdata/analizando-noticias-portada
 
 ```
 $ cd crawler
+$ scrapy crawl portada -O ../portada.csv
+```
+
+Para las descartadas:
+```
 $ scrapy crawl descartadas -O descartadas.csv
-$ scrapy crawl portada -O portada.csv
 ```
 
 ### Analisis (R)
 
-TODO
+```
+$ Rscript -e "rmarkdown::render('analisis.Rmd')"
+```
+
+This will generate *analisis.html*; to ensemble only the graphics execute:
+
+```
+$ Rscript analisis.R
+````
 
 ## Other
 
