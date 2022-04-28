@@ -41,14 +41,9 @@ sub_set <- function(df, colum, val){
   return (df[df[,colum]==val,])
 }
 
-#Directorio
-#setwd(file.path("D:", "Programacion", "Python", "Proyecto meneame"))
-#setwd(file.path("media","usuario","Mula", "Programacion", "Python", "Proyecto meneame"))
-
 #Leemos los datos
 #dt_portada <- fread("portada.csv", sep=";", header = TRUE, encoding="UTF-8")
 dt_portada <- read.csv("portada.csv", sep=";", header = TRUE, encoding="UTF-8")
-
 
 #Cambiamos los espacios en blanco por NAN's
 #dt_portada <- dt_portada %>%
@@ -110,7 +105,8 @@ dt_portada$web <-recode(dt_portada$web, "c('blogs.elconfidencial.com', 'vanitati
 #abc.es
 dt_portada$web <-recode(dt_portada$web, "c('sevilla.abc.es', 'abcblogs.abc.es', 'videos.abc.es', 'cordoba.abc.es', 
                         'hemeroteca.abc.es', 'participacion.abc.es', 'especiales.abc.es', 'lapalabraescrita.abc.es', 
-                        'mundial-futbol.abc.es', 'sevilla-origin.abc.es', 'valencia.abc.es', 'videochat.abc.es')='abc.es'")
+                        'mundial-futbol.abc.es', 'sevilla-origin.abc.es', 'valencia.abc.es', 'videochat.abc.es', 
+                        'abcdesevilla.es', 'abcdesevilla.xlsemanal.com', 'contenidosabcdesevilla.es')='abc.es'")
 
 #cadenaser.com
 dt_portada$web <-recode(dt_portada$web, "c('blogs.cadenaser.com', 'lacomunidad.cadenaser.com', 'play.cadenaser.com', 
@@ -155,7 +151,8 @@ dt_portada$web <-recode(dt_portada$web, "c('comunidad.levante-emv.com', 'comunid
 #es.gizmodo.com
 dt_portada$web <-recode(dt_portada$web, "c('gizmodo.es', 'gizmodo.com', 'sploid.gizmodo.com', 'i.gizmodo.com', 
                         'factually.gizmodo.com', 'gizmodo.com.au', 'gizmodo.co.uk', 'gizmodo.com.br', 
-                        'io9.gizmodo.com', 'lego.gizmodo.com', 'paleofuture.gizmodo.com', 'throb.gizmodo.com')='es.gizmodo.com'")
+                        'io9.gizmodo.com', 'lego.gizmodo.com', 'paleofuture.gizmodo.com', 'throb.gizmodo.com', 
+                        'es.gizmodo.com')='gizmodo.com'")
 #yahoo.com
 dt_portada$web <-recode(dt_portada$web, "c('es.noticias.yahoo.com', 'es.news.yahoo.com', 'news.yahoo.com', 'es.eurosport.yahoo.com', 
                         'es.finance.yahoo.com', 'espanol.news.yahoo.com', 'es-us.noticias.yahoo.com', 'ar.news.yahoo.com', 
@@ -465,6 +462,12 @@ dt_portada$web <-recode(dt_portada$web, "c('alianzas.periodismohumano.com', 'con
 dt_portada$web <-recode(dt_portada$web, "c('dinero.univision.com', 'entretenimiento.univision.com', 'feeds.univision.com', 
                         'nfl.univision.com', 'noticias.univision.com')='univision.com'")
 
+#reuters.com
+dt_portada$web <-recode(dt_portada$web, "c('es.reuters.com', 'reuters.com', 'lta.reuters.com', 'es.today.reuters.com', 
+                        'lta.today.reuters.com', 'reuters.es', 'uk.reuters.com', 'today.reuters.com', 'blogs.reuters.com', 
+                        'af.reuters.com', 'mobile.reuters.com', 'today.reuters.co.uk', 'about.reuters.com', 'in.reuters.com', 
+                        'in.today.reuters.com', 'africa.reuters.com', 'ca.reuters.com', 'fr.reuters.com', 'i.today.reuters.com',
+                        'mx.reuters.com', 'newsandinsight.thomsonreuters.com', 'us.mobile.reuters.com')='reuters.com'")
 ```
 
 Después de las transformaciones vemos que el origen más frecuente de las noticias de portada de menéame es elpais.com con 7.550 noticias. Este resultado no deja de ser llamativo porque desde el año 2014 existe un boicot a los medios pertenecientes a la Asociación de Medios de Información (AMI), antigua Asociación de Editores de Diarios Españoles (AEDE), lo que significa que se promueve activamente el descarte de las noticias provenientes de los medios pertenecientes a esta organización. El diario El País es uno de estos medios, además, en segundo lugar de la clasificación encontramos el diario El Mundo y en las primeras 20 posiciones podemos encontrar otros medios AEDE como La Vanguardia, ABC, La Voz de Galicia, etc. 
@@ -472,7 +475,9 @@ Después de las transformaciones vemos que el origen más frecuente de las notic
 ```{r meneame_2, include=FALSE}
 #Gráfico de nº de portadas
 webs <- as.data.frame(table(dt_portada$web))
+
 webs <- webs[order(-webs$Freq),] 
+#rownames(webs) <- NULL
 table(webs$Freq)
 
 #Estadisticos
@@ -507,11 +512,16 @@ dt_tree <- dt_tree %>% group_by(Var1) %>% summarise(n=sum(n))
 
 plot_ly(dt_tree, labels = ~(factor(Var1)), values = ~n, type = "pie", textinfo = 'none') %>% 
   layout(title = "Medios con mas noticias en portada", showlegend = T, font=list(size = 13))
+##api_create(p1, filename = "men_orig_port")
+
+##Liberamos memoria borrando variables
+##rm(dt_tree, webs)
 ```
 
 ## ¿Qué usuarios son los más activos?
 
 ```{r meneame_5, include=FALSE}
+######### Usuarios ######### 
 df_users <- as.data.frame(sort(table(dt_portada$usuario), decreasing = T))
 table(df_users$Freq)
 ```
@@ -520,6 +530,8 @@ Otro apartado interesante es el relativo a los usuarios. Tenemos un total de 22.
   
 El usuario que más noticias ha subido a portada es mezvan, con 2.561 un 1,44% del total; seguido por Tanatos con 2.046 y Ratoncolorao con 1.297. En los 25 primeros puestos tenemos además a tres usuarios cuyas cuentas fueron eliminadas. Son aquellos cuyo apodo es un número franqueado por dos guiones. Un total de 10.144 usuarios tiene una única portada. La cifra va descendiendo paulatinamente: 3.470 con 2, 1780 con 3, 1136 con 4, etc.
 
+#Estadisticos
+summary(df_users$Freq)
 
 ```{r meneame_6, echo=FALSE, fig.width=14, fig.height=6}
 ggplot(data=df_users[c(1:25),], aes(x=reorder(Var1, -Freq), y=Freq)) +
@@ -854,38 +866,31 @@ gen_cloud <- function(dataf,x){
 }
 ```
 
-## Todas las noticias
+## Word-cloud de toda la existencia de menéame
 ```{r meneame_19, echo=FALSE, warning=F}
 #Todas las noticias
 gen_cloud(dt_portada$noticia, "total")
 ```
 
-### Año 2006 (primer año completo de vida de menéame)
-#```{r meneame_20, echo=FALSE, warning=F}
-##Por año
-#
-#df <- dt_portada[(dt_portada$fecha_publicacion > paste(as.character(2006),"-01-01", sep="") & dt_portada$fecha_publicacion < paste(as.character(2006+1),"-01-01", sep="")), 2] 
-#gen_cloud(df, as.character(2006))
-#
-#```
-#
-### Año 2017
-#```{r meneame_21, echo=FALSE, warning=F}
-##Por año
-#
-#df <- dt_portada[(dt_portada$fecha_publicacion > paste(as.character(2017),"-01-01", sep="") & dt_portada$fecha_publicacion < paste(as.character(2017+1),"-01-01", sep="")), 2] 
-#gen_cloud(df, as.character(2017))
-#
-#```
-## Año 2022
+## Año 2006 (primer año)
+```{r meneame_20, echo=FALSE, warning=F}
+#Por año
+
+df <- dt_portada[(dt_portada$fecha_publicacion > paste(as.character(2006),"-01-01", sep="") & dt_portada$fecha_publicacion < paste(as.character(2006+1),"-01-01", sep="")), 2] 
+gen_cloud(df, as.character(2006))
+
+```
+
+## Año 2022 (actual)
 ```{r meneame_21, echo=FALSE, warning=F}
 #Por año
 
 df <- dt_portada[(dt_portada$fecha_publicacion > paste(as.character(2022),"-01-01", sep="") & dt_portada$fecha_publicacion < paste(as.character(2022+1),"-01-01", sep="")), 2] 
 gen_cloud(df, as.character(2022))
-#
-#
-##200 noticias con mas clicks
+
+```
+
+### 200 noticias con mas clicks
 ```{r meneame_22, echo=FALSE, warning=F}
 df <- dt_portada[complete.cases(dt_portada[,10]), ]
 df$clicks <- as.integer(df$clicks)
@@ -893,40 +898,40 @@ df <- df[order(df$clicks, decreasing = T),][c(1:200), 2]
 gen_cloud(df, "200_mas_clicks")
 ```
 
-##200 noticias con mas meneos
+### 200 noticias con mas meneos
 ```{r meneame_23, echo=FALSE, warning=F}
 df <- dt_portada[order(dt_portada$meneos, decreasing = T),][c(1:200), 2]
 gen_cloud(df, "200_mas_meneos")
 ```
 
-##200 noticias con mas votos positivos
+### 200 noticias con mas votos positivos
 ```{r meneame_24, echo=FALSE, warning=F}
 df <- dt_portada[order(dt_portada$votos_positivos, decreasing = T),][c(1:200), 2]
 gen_cloud(df, "200_mas_positivos")
 ```
 
-##200 noticias con mas votos anónimos
+### 200 noticias con mas votos anónimos
 ```{r meneame_25, echo=FALSE, warning=F}
 df <- dt_portada[order(dt_portada$votos_anonimos, decreasing = T),][c(1:200), 2]
 gen_cloud(df, "200_mas_anonimos")
 ```
 
-##200 noticias con mas votos negativos
+### 200 noticias con mas votos negativos
 ```{r meneame_26, echo=FALSE, warning=F}
 df <- dt_portada[order(dt_portada$votos_negativos, decreasing = T),][c(1:200), 2]
 gen_cloud(df, "200_mas_negativos")
 ```
 
-##200 noticias con mas comentarios
+### 200 noticias con mas comentarios
 ```{r meneame_27, echo=FALSE, warning=F}
 df <- dt_portada[order(dt_portada$comentarios, decreasing = T),][c(1:200), 2]
 gen_cloud(df, "200_mas_comentarios")
 ```
 
-##200 noticias con mas karma
+### 200 noticias con mas karma
 ```{r meneame_28, echo=FALSE, warning=F}
 df <- dt_portada[order(dt_portada$karma, decreasing = T),][c(1:200), 2]
 gen_cloud(df, "200_mas_karma")
 ```
 
-Espero que os haya gustado :). 
+# Espero que os haya gustado :). 
