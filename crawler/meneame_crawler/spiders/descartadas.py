@@ -2,10 +2,10 @@
 import scrapy
 
 
-class PortadaSpider(scrapy.Spider):
-    name = 'portada'
+class DescartadasSpider(scrapy.Spider):
+    name = 'descartadas'
     allowed_domains = ['meneame.net']
-    start_urls = ['https://meneame.net/']
+    start_urls = ['https://www.meneame.net/queue?meta=_discarded']
 
     def parse(self, response):
 
@@ -15,7 +15,6 @@ class PortadaSpider(scrapy.Spider):
             else:
                 field = ''
             return field
-
 
         news = response.xpath('.//*[@class="news-summary"]')
         for new in news:
@@ -33,7 +32,7 @@ class PortadaSpider(scrapy.Spider):
 
             try:
                 link_n = extraer(new.xpath('.//h2/a/@href').extract_first())
-                link_n = link_n + " "
+                link_n = link_n + ' '
             except Exception:
                 link_n = ''
 
@@ -44,20 +43,21 @@ class PortadaSpider(scrapy.Spider):
 
             try:
                 user = extraer(new.xpath('.//*[@class="news-submitted"]/a/text()').extract_first())
-                user = extraer(user.replace(';', ','))
             except Exception:
                 user = ''
 
             try:
-                id_user = \
-                    extraer(new.xpath('.//*[@class="news-submitted"]/a/@class').extract_first())
+                id_user = extraer(
+                    new.xpath('.//*[@class="news-submitted"]/a/@class').extract_first()
+                )
                 id_user = extraer(id_user.replace('tooltip u:', ''))
             except Exception:
                 id_user = ''
 
             try:
-                f_envio = \
-                    extraer(new.xpath('.//*[@class="ts visible"]/@data-ts').extract()[0::2][0])
+                f_envio = extraer(
+                    new.xpath('.//*[@class="ts visible"]/@data-ts').extract()[0::2][0]
+                )
             except Exception:
                 f_envio = ''
 
@@ -77,11 +77,13 @@ class PortadaSpider(scrapy.Spider):
             except Exception:
                 clicks = ''
 
+
             try:
                 coment = extraer(new.xpath('.//*[@class="comments"]/text()')[1::2][0].extract())
                 coment = extraer(coment.replace(' ', '').replace('comentarios', ''))
             except Exception:
                 coment = ''
+
 
             try:
                 v_pos = extraer(
@@ -90,12 +92,11 @@ class PortadaSpider(scrapy.Spider):
             except Exception:
                 v_pos = ''
 
+
             try:
-                v_anom = extraer(
-                    new.xpath(
-                        './/*[@class="wideonly votes-anonymous"]/span/strong/text()'
-                    )[1::2][0].extract()
-                )
+                v_anom = extraer(new.xpath(
+                    './/*[@class="wideonly votes-anonymous"]/span/strong/text()'
+                )[1::2][0].extract())
             except Exception:
                 v_anom = ''
 
@@ -130,23 +131,23 @@ class PortadaSpider(scrapy.Spider):
                 'link_noticia': link_n,
                 'web': web,
                 'usuario': user,
-                'id_usuario' : id_user,
-                'fecha_envio' : f_envio,
-                'fecha_publicacion' : f_pub,
-                'meneos' : meneos,
-                'clicks' : clicks,
+                'id_usuario': id_user,
+                'fecha_envio': f_envio,
+                'fecha_publicacion': f_pub,
+                'meneos': meneos,
+                'clicks': clicks,
                 'comentarios': coment,
-                'votos_positivos' : v_pos,
-                'votos_anonimos' : v_anom,
-                'votos_negativos' : v_neg,
-                'karma' : karma,
-                'sub' : seccion,
-                'extracto' : extracto
+                'votos_positivos': v_pos,
+                'votos_anonimos': v_anom,
+                'votos_negativos': v_neg,
+                'karma': karma,
+                'sub': seccion,
+                'extracto': extracto
             }
 
         sig_pag = response.xpath('.//*[contains(text(), "siguiente »")]/@href').extract_first()
-        abs_sig_pag = response.urljoin(sig_pag)
+        abs_sig_pag = response.urljoin('http://meneame.net/queue' + sig_pag)
 
-        self.logger.info('Following to pag ' + sig_pag.split('=')[1])
+        self.logger.info('Following to pag ' + sig_pag.split('&')[0].split('=')[1])
 
         yield scrapy.Request(abs_sig_pag)
