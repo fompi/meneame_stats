@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from scrapy.loader import ItemLoader
-from scrapy.loader.processors import TakeFirst, MapCompose
+from itemloaders.processors import TakeFirst, MapCompose
 import scrapy
 
 class NewsItem(scrapy.Item):
