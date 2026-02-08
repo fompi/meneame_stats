@@ -1,1 +1,2 @@
 *.csv
+!demo_data/*.csv

@@ -1,0 +1,176 @@
+---
+title: "Analisis de noticias de portada de meneame (demo)"
+output:
+  html_document: default
+always_allow_html: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(car)
+library(data.table)
+library(ggplot2)
+library(plotly)
+library(lubridate)
+library(tm)
+library(wordcloud)
+
+# Funciones
+ts_mensual <- function(db){
+  db %>%
+    mutate(date = format(fecha_publicacion, "%Y-%m")) %>%
+    group_by(date) %>%
+    count(fecha_publicacion) %>% summarise(total=sum(n))
+}
+
+ts_anual <- function(db){
+  db %>%
+    mutate(date = format(fecha_publicacion, "%Y")) %>%
+    group_by(date) %>%
+    count(fecha_publicacion) %>% summarise(total=sum(n))
+}
+
+# Leemos los datos
+dt_portada <- read.csv("demo_data/portada.csv", sep=";", header = TRUE, encoding="UTF-8")
+
+# Declaramos series temporales
+dt_portada$fecha_envio <- as.POSIXct(dt_portada$fecha_envio, origin = "1970-01-01")
+dt_portada$fecha_publicacion <- as.POSIXct(dt_portada$fecha_publicacion, origin = "1970-01-01")
+
+n_noticias <- nrow(dt_portada)
+```
+
+## Dataset
+
+Este es un analisis de demo con **`r n_noticias`** noticias de portada extraidas de [meneame.net](https://www.meneame.net/).
+
+## Origen de las noticias
+
+```{r origen, echo=FALSE, fig.width=14, fig.height=6}
+webs <- as.data.frame(table(dt_portada$web))
+webs <- webs[order(-webs$Freq),]
+
+n_webs <- min(nrow(webs), 25)
+
+ggplot(data=webs[1:n_webs,], aes(x=reorder(Var1, -Freq), y=Freq)) +
+  geom_bar(stat="identity", fill="gray28") + theme_classic() +
+  geom_text(aes(label=Freq), vjust=1.6, color="white", size=3.5)+
+  theme(axis.text.x = element_text(angle = 40, hjust = 1, size=12)) +
+  scale_y_continuous(expand = c(0,0)) + labs(x = "Origen", y="Noticias en portada", title="Origen de las noticias de portada")
+```
+
+```{r origen_pie, echo=FALSE, warning=F}
+dt_tree <- webs %>% group_by(Var1) %>% summarise(n=sum(Freq))
+dt_tree$Var1 <- as.character(dt_tree$Var1)
+dt_tree$Var1[dt_tree$n < 2] <- "otros"
+dt_tree <- dt_tree %>% group_by(Var1) %>% summarise(n=sum(n))
+
+plot_ly(dt_tree, labels = ~(factor(Var1)), values = ~n, type = "pie", textinfo = 'none') %>%
+  layout(title = "Proporcion por medio", showlegend = T, font=list(size = 13))
+```
+
+## Usuarios
+
+```{r usuarios, echo=FALSE, fig.width=14, fig.height=6}
+df_users <- as.data.frame(sort(table(dt_portada$usuario), decreasing = T))
+
+n_users <- min(nrow(df_users), 25)
+
+ggplot(data=df_users[1:n_users,], aes(x=reorder(Var1, -Freq), y=Freq)) +
+  geom_bar(stat="identity", fill="gray28") + theme_classic() +
+  geom_text(aes(label=Freq), vjust=1.6, color="white", size=3.5)+
+  theme(axis.text.x = element_text(angle = 40, hjust = 1, size=12)) +
+  scale_y_continuous(expand = c(0,0)) + labs(x = "Usuario", y="Noticias en portada", title="Usuarios con mas noticias en portada")
+```
+
+Total de **`r length(unique(dt_portada$usuario))`** usuarios distintos. Media de `r round(mean(df_users$Freq), 1)` envios por usuario.
+
+## Subs
+
+```{r subs, echo=FALSE, warning=F}
+dt_pie <- as.data.frame(table(dt_portada$sub))
+dt_pie <- dt_pie[order(-dt_pie$Freq),]
+dt_pie$Var1 <- as.character(dt_pie$Var1)
+
+plot_ly(dt_pie, labels = ~(factor(Var1)), values = ~Freq, type = "pie") %>%
+  layout(title = "Subs de las noticias de portada", showlegend = T, font=list(size = 13))
+```
+
+## Votos, comentarios y karma
+
+```{r votos, echo=FALSE, warning=F}
+dt_portada$clicks <- as.integer(dt_portada$clicks)
+dt_portada$comentarios <- as.integer(dt_portada$comentarios)
+dt_portada$meneos <- as.integer(dt_portada$meneos)
+dt_portada$votos_positivos <- as.integer(dt_portada$votos_positivos)
+dt_portada$votos_anonimos <- as.integer(dt_portada$votos_anonimos)
+dt_portada$votos_negativos <- as.integer(dt_portada$votos_negativos)
+dt_portada$karma <- as.integer(dt_portada$karma)
+
+plot_ly(type = "box") %>%
+  layout(title = "Distribucion de votos y karma", showlegend = F, font=list(size = 13),
+         xaxis=list(title=""), yaxis=list(title="Total")) %>%
+  add_boxplot(data=dt_portada, y = ~meneos, name = "Meneos") %>%
+  add_boxplot(data=dt_portada, y = ~votos_positivos, name = "V. Positivos") %>%
+  add_boxplot(data=dt_portada, y = ~votos_anonimos, name = "V. Anonimos") %>%
+  add_boxplot(data=dt_portada, y = ~votos_negativos, name = "V. Negativos") %>%
+  add_boxplot(data=dt_portada, y = ~karma, name = "Karma") %>%
+  add_boxplot(data=dt_portada, y = ~comentarios, name = "Comentarios")
+```
+
+```{r meneos_sub, echo=FALSE, warning=F}
+plot_ly(dt_portada, y = ~meneos, color = ~sub, type = "box") %>%
+  layout(title = "Meneos por sub", showlegend = T, font=list(size = 13),
+         xaxis=list(title=""), yaxis=list(title="Meneos"))
+```
+
+## Tiempo hasta portada
+
+```{r tiempo, echo=FALSE, warning=F}
+dt_portada$t_subida_horas <- as.numeric(difftime(dt_portada$fecha_publicacion, dt_portada$fecha_envio), units="hours")
+
+plot_ly(type = "box", width = 450, height = 500) %>%
+  layout(title = "Horas hasta llegar a portada", showlegend = F, font=list(size = 13),
+         xaxis=list(title=""), yaxis=list(title="Horas")) %>%
+  add_boxplot(data=dt_portada, y = ~t_subida_horas, name = "Todas")
+```
+
+## Nube de palabras
+
+```{r cloud_funcs, echo=FALSE, warning=F}
+rmstrange <- function(x) stringr::str_replace_all(x,"[^[:graph:]]", " ")
+rmacentos <- function(x) chartr("\u00e1\u00e0\u00e2\u00e4\u00e9\u00eb\u00e8\u00ea\u00ed\u00ef\u00ec\u00ee\u00f3\u00f6\u00f2\u00f4\u00fa\u00fc\u00f9\u00fb\u00f1", "aaaaeeeeiiiioooouuuun", x)
+
+gen_cloud <- function(dataf){
+  if(length(dataf) < 5) {
+    plot.new()
+    text(0.5, 0.5, "Insuficientes datos", cex=1.5)
+    return(invisible(NULL))
+  }
+  corpus_tit <- Corpus(VectorSource(dataf), readerControl = list(reader = readPlain, language = "es"))
+  corpus_tit <- tm_map(corpus_tit, content_transformer(removePunctuation))
+  corpus_tit <- tm_map(corpus_tit, content_transformer(tolower))
+  corpus_tit <- tm_map(corpus_tit, content_transformer(rmstrange))
+  corpus_tit <- tm_map(corpus_tit, content_transformer(rmacentos))
+  corpus_tit <- tm_map(corpus_tit, removeWords, c(stopwords("spanish"), "mas", "tras", "solo", "cada", "gran", "asi", "casi", "the", "dice"))
+  corpus_tit <- tm_map(corpus_tit, content_transformer(stripWhitespace))
+  corpus_tit <- tm_map(corpus_tit, content_transformer(trimws))
+
+  corpus_tit <- TermDocumentMatrix(corpus_tit)
+  sparsity <- min(0.99, 1 - (5 / length(dataf)))
+  corpus_tit <- removeSparseTerms(corpus_tit, sparsity)
+
+  corpus_tit <- as.matrix(corpus_tit)
+  corpus_tit <- sort(rowSums(corpus_tit), decreasing=TRUE)
+
+  wordcloud(words=names(corpus_tit), freq=corpus_tit, random.order = FALSE,
+            colors = RColorBrewer::brewer.pal(8, "Set2"), max.words=200)
+}
+```
+
+### Titulares de portada
+```{r cloud_all, echo=FALSE, warning=F}
+gen_cloud(dt_portada$noticia)
+```
